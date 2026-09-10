@@ -1,40 +1,48 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chat Application</title>
-</head>
-<body>
-    <h1>Chat Application</h1>
-
-    <input type="text" id="message" placeholder="Type a message..."/>
-    <button id="sendBtn">Send</button>
-
-   <div id="messages">
-
+    <!-- Link external CSS -->
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="chat-header">
+        <span>💬 Real-Time Chat</span>
+        <span
+          id="user-count"
+          style="font-size: 13px; font-weight: normal; opacity: 0.9"
+          >🟢 1 Online</span
+        >
+      </div>
+      <div id="messages"></div>
+      <!-- Typing feedback area -->
+      <div
+        id="feedback"
+        style="
+          font-size: 12px;
+          color: #888;
+          font-style: italic;
+          padding: 0 16px 6px 16px;
+          min-height: 18px;
+        "
+      ></div>
+      <div class="chat-input-area">
+        <input
+          type="text"
+          id="message"
+          placeholder="Type a message..."
+          autocomplete="off"
+        />
+        <button id="sendBtn">Send</button>
+      </div>
     </div>
 
+    <!-- Socket.IO library -->
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        const msgIn = document.getElementById('message');
-        const sendbtn = document.getElementById('sendBtn');
-        const allMsg = document.getElementById('messages');
-
-        socket.on('message',(message)=>{
-            const p = document.createElement('p');
-            p.textContent = message;
-            allMsg.appendChild(p);
-            
-        })
-
-        sendBtn.addEventListener('click',()=>{
-            const message = msgIn.value;
-            console.log(message);
-            socket.emit('user-message',message);
-        })  
-        
-    </script>
-</body>
+    <!-- Link external Client JS -->
+    <script src="/client.js"></script>
+  </body>
 </html>

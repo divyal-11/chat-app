@@ -14,10 +14,31 @@ app.get("/", (req, res) => {
 });
 
 io.on('connection', (socket) =>{
-    console.log("A user connected", socket.id);
+    io.emit('user-count',io.engine.clientsCount);
+
+    socket.on('user-joined',(name)=>{
+        socket.userName=name;
+        socket.broadcast.emit('system-message',`${name} has joined the chat`)
+    })
 
     socket.on('user-message', (message) => {
         io.emit('message',message);
+    })
+
+    socket.on('disconnect',()=>{
+        io.emit('user-count',io.engine.clientsCount)
+
+        if(socket.userName){
+            io.emit('system-message',`${socket.userName} has left the chat`)
+        }
+    })
+
+    socket.on('typing',()=>{
+        socket.broadcast.emit('user-typing',socket.userName);
+    })
+
+    socket.on('stop-typing',()=>{
+        socket.broadcast.emit('user-stop-typing');
     })
 })
 
