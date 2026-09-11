@@ -40,7 +40,10 @@ io.on('connection', (socket) =>{
 
     socket.on('user-message', (message) => {
         if(socket.currentRoom){
-            io.to(socket.currentRoom).emit('message',message)
+            io.to(socket.currentRoom).emit('message',{
+                ...message,
+                senderId: socket.id
+            })
         }
     })
 

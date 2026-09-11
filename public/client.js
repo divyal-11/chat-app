@@ -14,7 +14,7 @@ let currentRoom = roomSelect.value;
 socket.emit('join-room',{room:currentRoom,userName});
 
 socket.on('user-count',(count)=>{
-    document.getElementById('user-count').textContent = `🟢 ${count} Online`;
+    document.getElementById('user-count').textContent = ` ${count} Online`;
 })
 
 socket.on('system-message',(message)=>{
@@ -25,25 +25,51 @@ socket.on('system-message',(message)=>{
     allMsg.scrollTop = allMsg.scrollHeight;
 })
 
+// Helper to generate a consistent vibrant gradient based on username
+function getAvatarGradient(name) {
+    const gradients = [
+        'linear-gradient(135deg, #f43f5e, #fb7185)',
+        'linear-gradient(135deg, #8b5cf6, #c084fc)',
+        'linear-gradient(135deg, #06b6d4, #38bdf8)',
+        'linear-gradient(135deg, #10b981, #34d399)',
+        'linear-gradient(135deg, #f59e0b, #fbbf24)'
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i);
+    return gradients[hash % gradients.length];
+}
+
 // Listen for broadcast messages from server
 socket.on('message', (data) => {
-    const isMe = data.userName === userName;
+    const isMe = data.senderId === socket.id;
 
-    const div = document.createElement('div');
-    div.className = `msg ${isMe ? 'msg-outgoing' : 'msg-incoming'}`;
+    if (!isMe) {
+        playNotificationSound();
+    }
 
-    div.innerHTML = `
-        <div class="msg-info">
-            <strong>${isMe ? 'You' : data.userName}</strong> • ${data.time}
+    const row = document.createElement('div');
+    row.className = `msg-row ${isMe ? 'msg-row-outgoing' : 'msg-row-incoming'}`;
+
+    const initial = (data.userName || 'A').charAt(0).toUpperCase();
+    const bgGradient = getAvatarGradient(data.userName || 'Anonymous');
+
+    row.innerHTML = `
+        <div class="avatar" style="background: ${bgGradient}">
+            ${initial}
         </div>
-        <div>${data.message}</div>
+        <div class="msg-bubble">
+            <div class="msg-meta">
+                <span class="sender-name">${isMe ? 'You' : data.userName}</span>
+                <span>• ${data.time}</span>
+            </div>
+            <div class="msg-text">${data.message}</div>
+        </div>
     `;
 
-    allMsg.appendChild(div);
-
-    // Auto-scroll to the latest message
+    allMsg.appendChild(row);
     allMsg.scrollTop = allMsg.scrollHeight;
 });
+
 
 // Function to send message
 function sendMessage() {
