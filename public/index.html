@@ -10,7 +10,21 @@
   <body>
     <div class="chat-container">
       <div class="chat-header">
-        <span>💬 Real-Time Chat</span>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+          "
+        >
+          <span>💬</span>
+          <select id="roomSelect">
+            <option value="general">General</option>
+            <option value="tech">Tech</option>
+            <option value="resources">Resources</option>
+          </select>
+        </div>
         <span
           id="user-count"
           style="font-size: 13px; font-weight: normal; opacity: 0.9"

@@ -3,12 +3,15 @@ const socket = io();
 const msgIn = document.getElementById('message');
 const sendBtn = document.getElementById('sendBtn');
 const allMsg = document.getElementById('messages');
+const roomSelect = document.getElementById('roomSelect');
+const feedback = document.getElementById('feedback');
 
 // Prompt user for their name
 const userName = prompt("Enter your Name:") || "Anonymous";
 msgIn.focus();
 
-socket.emit('user-joined',userName);
+let currentRoom = roomSelect.value;
+socket.emit('join-room',{room:currentRoom,userName});
 
 socket.on('user-count',(count)=>{
     document.getElementById('user-count').textContent = `🟢 ${count} Online`;
@@ -71,7 +74,26 @@ msgIn.addEventListener('keydown', (event) => {
     }
 });
 
-const feedback = document.getElementById('feedback');
+//listen for room switching in the dropdown
+roomSelect.addEventListener('change',()=>{
+    currentRoom = roomSelect.value
+
+    //clear prev room msges and typing text
+    allMsg.innerHTML = ''
+    feedback.textContent = '';
+    
+    //tell server we joined the room
+    socket.emit('join-room',{room: currentRoom,userName});
+
+    const div = document.createElement('div');
+    div.className = "msg msg-system";
+    div.textContent = `You joined #${currentRoom}`;
+    allMsg.appendChild(div);
+    allMsg.scrollTop = allMsg.scrollHeight;
+    msgIn.focus();
+});    
+
+
 let typingTimeout;
 
 msgIn.addEventListener('input',()=>{

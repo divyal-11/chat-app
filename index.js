@@ -15,30 +15,53 @@ app.get("/", (req, res) => {
 
 io.on('connection', (socket) =>{
     io.emit('user-count',io.engine.clientsCount);
+    
+    //handle user joining or switching rooms
+    socket.on('join-room',({room,userName})=>{
+        socket.userName = userName
+        
+        //if the user was already in a room ,leave it and notify that roomm
+        if(socket.currentRoom){
+            socket.leave(socket.currentRoom)
+            socket.to(socket.currentRoom).emit('system-message',`${socket.userName} left #${socket.currentRoom}`)
+        }
 
-    socket.on('user-joined',(name)=>{
-        socket.userName=name;
-        socket.broadcast.emit('system-message',`${name} has joined the chat`)
+        //join new room
+        socket.join(room)
+        socket.currentRoom = room
+        //notify others in the new room
+        socket.to(room).emit('system-message',`${socket.userName} has joined #${room}`)
+        
+
     })
 
+
+
+
     socket.on('user-message', (message) => {
-        io.emit('message',message);
+        if(socket.currentRoom){
+            io.to(socket.currentRoom).emit('message',message)
+        }
     })
 
     socket.on('disconnect',()=>{
         io.emit('user-count',io.engine.clientsCount)
 
-        if(socket.userName){
-            io.emit('system-message',`${socket.userName} has left the chat`)
+        if(socket.userName && socket.currentRoom){
+            socket.to(socket.currentRoom).emit('system-message',`${socket.userName} has left the chat`)
         }
     })
 
     socket.on('typing',()=>{
-        socket.broadcast.emit('user-typing',socket.userName);
+        if(socket.currentRoom){
+            socket.to(socket.currentRoom).emit('user-typing',socket.userName);
+        }
     })
 
     socket.on('stop-typing',()=>{
-        socket.broadcast.emit('user-stop-typing');
+        if(socket.currentRoom){
+            socket.to(socket.currentRoom).emit('user-stop-typing',socket.userName)
+        }
     })
 })
 
